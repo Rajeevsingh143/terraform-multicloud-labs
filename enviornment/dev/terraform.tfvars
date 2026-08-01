@@ -3,6 +3,10 @@ ruhana = {
     name     = "rg-humana-dev"
     location = "westus"
   }
+  rg2 = {
+    name     = "rg-parwana-dev"
+    location = "westus"
+  }
 }
 
 vnets = {

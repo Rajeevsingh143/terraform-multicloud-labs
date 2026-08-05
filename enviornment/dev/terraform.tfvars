@@ -113,4 +113,31 @@ vmset = {
       disable_password_authentication = false
     }
   }
+    vm2 = {
+    name                  = "vm-parwana-dev"
+    resource_group_name   = "rg-humana-dev"
+    location              = "westus"
+    network_interface_ids = ["/subscriptions/a7c52d88-02c2-4bbb-9c50-637fa4f2b52e/resourceGroups/rg-humana-dev/providers/Microsoft.Network/networkInterfaces/nic-humana-dev-1"]
+    size               = "Standard_D2s_v3"
+    storage_image_reference = {
+      publisher = "canonical"
+      offer     = "0001-com-ubuntu-server-jammy"
+      sku       = "22_04-lts"
+      version   = "latest"
+    }
+    storage_os_disk = {
+      name              = "vm-humana-dev-osdisk"
+      caching           = "ReadWrite"
+      create_option     = "FromImage"
+      managed_disk_type = "Standard_LRS"
+    }
+    os_profile = {
+      computer_name  = "vm-linux-parwana-dev"
+      admin_username = "devopsinsider"
+      admin_password = "Krystal@8612"
+    }
+    os_profile_linux_config = {
+      disable_password_authentication = false
+    }
+  }
 }

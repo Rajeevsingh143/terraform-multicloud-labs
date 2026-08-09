@@ -1,10 +1,11 @@
-name: Terraform CI-CD
+name: Terraform Azure OIDC
 
 on:
   push:
     branches:
-      - 'feature/**'
       - main
+
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -18,35 +19,82 @@ env:
 
 jobs:
   terraform:
+    name: Terraform Deploy - DEV
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
 
-      - uses: azure/login@v2
+      # ----------------------------------------
+      # Checkout
+      # ----------------------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------
+      # Azure Login using OIDC
+      # ----------------------------------------
+      - name: Azure Login
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - uses: hashicorp/setup-terraform@v3
+      # ----------------------------------------
+      # Verify Azure Login
+      # ----------------------------------------
+      - name: Verify Azure Login
+        run: |
+          az account show
 
+      # ----------------------------------------
+      # Install Terraform
+      # ----------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # ----------------------------------------
+      # Terraform Format
+      # ----------------------------------------
+      - name: Terraform Format
+        working-directory: ./env/dev
+        run: |
+          terraform fmt -check -recursive
+
+      # ----------------------------------------
+      # Terraform Init
+      # ----------------------------------------
       - name: Terraform Init
         working-directory: ./env/dev
-        run: terraform init
+        run: |
+          terraform init -input=false
 
-      - name: Terraform Format
-        run: terraform fmt -check -recursive
-
+      # ----------------------------------------
+      # Terraform Validate
+      # ----------------------------------------
       - name: Terraform Validate
         working-directory: ./env/dev
-        run: terraform validate
+        run: |
+          terraform validate
 
+      # ----------------------------------------
+      # Terraform Plan
+      # ----------------------------------------
       - name: Terraform Plan
         working-directory: ./env/dev
-        run: terraform plan -var-file="terraform.tfvars"
+        run: |
+          terraform plan \
+            -input=false \
+            -var-file="terraform.tfvars"
 
+      # ----------------------------------------
+      # Terraform Apply
+      # ----------------------------------------
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         working-directory: ./env/dev
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply \
+            -input=false \
+            -auto-approve \
+            -var-file="terraform.tfvars"

@@ -44,11 +44,11 @@ axion_pip = {
 
 nic-set = {
   nic1 = {
-    nic_name                = "rajeev_axion_nic"
-    nic_location            = "westus"
-    nic_resource_group_name = "rajeev_axion"
-    nic_vnet_name           = "rajeev_axion_vnet"
-    nic_subnet_name         = "rajeev_axion_subnet"
+    nic_name                 = "rajeev_axion_nic"
+    nic_location             = "westus"
+    nic_resource_group_name  = "rajeev_axion"
+    nic_vnet_name            = "rajeev_axion_vnet"
+    nic_subnet_name          = "rajeev_axion_subnet"
     nic_public_ip_address_id = "rajeev_axion_pip"
   }
 }
@@ -63,16 +63,16 @@ key_vaults = {
 
 key_vault_secrets = {
   secret1 = {
-    name               = "vm-admin-username"
-    value              = "devopsindsider"
-    key_vault_name     = "rajeev-axion-kv-01"
-    key_vault_rg_name  = "rajeev_axion"
+    name              = "vm-admin-username"
+    value             = "devopsindsider"
+    key_vault_name    = "rajeev-axion-kv-01"
+    key_vault_rg_name = "rajeev_axion"
   }
   secret2 = {
-    name               = "vm-admin-password"
-    value              = "Rajeev@1234"
-    key_vault_name     = "rajeev-axion-kv-01"
-    key_vault_rg_name  = "rajeev_axion"
+    name              = "vm-admin-password"
+    value             = "Rajeev@1234"
+    key_vault_name    = "rajeev-axion-kv-01"
+    key_vault_rg_name = "rajeev_axion"
   }
 }
 

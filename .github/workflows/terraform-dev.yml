@@ -1,4 +1,4 @@
-name: Terraform Feature CI
+name: Terraform CI
 
 on:
   push:
@@ -8,57 +8,84 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 env:
   TF_WORKING_DIR: ./env/dev
 
 jobs:
 
-  terraform:
+  terraform-ci:
+
     name: Terraform CI
     runs-on: ubuntu-latest
 
     steps:
 
-      # ==========================================
-      # 1. Checkout
-      # ==========================================
+      # ============================================
+      # 1. Checkout Repository
+      # ============================================
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ==========================================
+
+      # ============================================
       # 2. Setup Terraform
-      # ==========================================
+      # ============================================
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # ==========================================
-      # 3. Terraform Init
-      # ==========================================
+
+      # ============================================
+      # 3. Azure Login using OIDC
+      # ============================================
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+
+      # ============================================
+      # 4. Verify Azure Login
+      # ============================================
+      - name: Verify Azure Login
+        run: |
+          az account show
+          az account list --output table
+
+
+      # ============================================
+      # 5. Terraform Init
+      # ============================================
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
           terraform init
 
-      # ==========================================
-      # 4. Terraform Format
-      # ==========================================
+
+      # ============================================
+      # 6. Terraform Format
+      # ============================================
       - name: Terraform Format
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
           terraform fmt -check -recursive
 
-      # ==========================================
-      # 5. Terraform Validate
-      # ==========================================
+
+      # ============================================
+      # 7. Terraform Validate
+      # ============================================
       - name: Terraform Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
           terraform validate
 
-      # ==========================================
-      # 6. Terraform Plan
-      # ==========================================
+
+      # ============================================
+      # 8. Terraform Plan
+      # ============================================
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
@@ -66,42 +93,43 @@ jobs:
             -var-file="terraform.tfvars" \
             -out=tfplan
 
-      # ==========================================
-      # 7. Create PR Feature → Main
-      # ==========================================
+
+      # ============================================
+      # 9. Create Pull Request
+      # ============================================
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
 
-          PR_URL=$(gh pr list \
+          PR_NUMBER=$(gh pr list \
             --head "${{ github.ref_name }}" \
             --base main \
             --state open \
-            --json url \
-            --jq '.[0].url')
+            --json number \
+            --jq '.[0].number')
 
-          if [ -z "$PR_URL" ]; then
+          if [ -z "$PR_NUMBER" ]; then
 
-            PR_URL=$(gh pr create \
+            gh pr create \
               --base main \
               --head "${{ github.ref_name }}" \
-              --title "Terraform Deployment - ${{ github.ref_name }}" \
-              --body "Automated Terraform PR.
+              --title "Terraform - ${{ github.ref_name }}" \
+              --body "Terraform CI completed successfully.
 
-          Checks performed:
+          Checks:
+          - Azure Login
           - Terraform Init
           - Terraform Format
           - Terraform Validate
-          - Terraform Plan")
+          - Terraform Plan"
 
           fi
 
-          echo "PR URL: $PR_URL"
 
-      # ==========================================
-      # 8. Enable Auto Merge
-      # ==========================================
+      # ============================================
+      # 10. Enable Auto Merge
+      # ============================================
       - name: Enable Auto Merge
         env:
           GH_TOKEN: ${{ github.token }}
@@ -114,9 +142,11 @@ jobs:
             --json number \
             --jq '.[0].number')
 
-          echo "PR Number: $PR_NUMBER"
+          if [ -n "$PR_NUMBER" ]; then
 
-          gh pr merge "$PR_NUMBER" \
-            --auto \
-            --squash \
-            --delete-branch
+            gh pr merge "$PR_NUMBER" \
+              --auto \
+              --squash \
+              --delete-branch
+
+          fi

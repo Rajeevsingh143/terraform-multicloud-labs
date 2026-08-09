@@ -1,0 +1,9 @@
+variable "axion" {}
+variable "axion_vnets" {}
+variable "subnet-axion" {}
+variable "axion_storage_account" {}
+variable "axion_pip" {}
+variable "nic-set" {}
+variable "key_vaults" {}
+variable "key_vault_secrets" {}
+variable "linuxvm" {}

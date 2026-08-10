@@ -1,471 +1,263 @@
-# terraform-multicloud-labs
-This is for Monolithic reusable code of terraform to build Landing Zone.
+# 🚀 terraform-multicloud-labs
 
+<div align="center">
 
-# 🚀 Azure Landing Zone using Terraform Parent–Child Modules
+![Terraform](https://img.shields.io/badge/Terraform-1.5%2B-623CE4?style=for-the-badge&logo=terraform&logoColor=white)
+![Azure](https://img.shields.io/badge/Microsoft_Azure-0089D6?style=for-the-badge&logo=microsoft-azure&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green.style=for-the-badge)
 
-> **Build once. Reuse everywhere. Deploy consistently. Govern centrally.**
+<br/>
 
-## 📌 Project Overview
+> ⚡ **Enterprise-Ready Azure Infrastructure as Code (IaC)** powered by **Terraform Parent–Child Architecture** & **GitHub Actions OIDC CI/CD Pipeline**.
 
-This project demonstrates the implementation of an **enterprise-ready Azure Landing Zone using Terraform Infrastructure as Code (IaC)**.
+<br/>
 
-The solution follows a **Parent–Child Terraform Module architecture** to create reusable, scalable, and standardized Azure infrastructure.
+<img src="https://raw.githubusercontent.com/andreasbm/readme-templates/master/assets/git.gif" width="600" alt="CI/CD Git Flow GIF"/>
 
-The architecture is designed to support:
-
-* Enterprise Cloud Adoption
-* Centralized Governance
-* Secure Networking
-* Identity and Access Management
-* Infrastructure Automation
-* DevSecOps
-* Multi-Environment Deployments
-* Reusable Infrastructure Modules
-
-The solution can be extended across **Development, Test, Staging, and Production** environments while maintaining consistent infrastructure standards.
+</div>
 
 ---
 
-# 🏗️ 1. Azure Landing Zone Architecture
+## 📌 Project Overview 🎯
 
-The following high-level architecture represents the Landing Zone design, where centralized platform services provide governance, security, networking, and monitoring for application workloads.
+This repository (`terraform-multicloud-labs`) implements an enterprise-standard, modular **Azure Landing Zone** using **Terraform (HCL)** and **GitHub Actions keyless OIDC authentication**.
+
+The architecture uses a **Parent–Child Module design** where individual child modules encapsulate Azure resources (Resource Group, VNet, Subnets, Key Vaults, Public IPs, Network Interfaces, Storage Accounts, and Linux Virtual Machines), and the root environment (`env/dev`) orchestrates these modules cleanly.
+
+---
+
+## 📂 Repository Structure 📁
+
+```text
+📦 terraform-multicloud-labs
+ ┣ 📂 .github
+ ┃ ┗ 📂 workflows
+ ┃ ┃ ┣ 📜 azure-oidc-test.yml       # 🧪 Azure OIDC Connection Test Workflow
+ ┃ ┃ ┗ 📜 terraform-dev.yml         # 🚀 Main Terraform CI/CD Deployment Pipeline
+ ┣ 📂 child_module
+ ┃ ┣ 📂 azurerm_key_vault           # 🔑 Key Vault Child Module
+ ┃ ┣ 📂 azurerm_key_vault_secret    # 🔐 Key Vault Secrets Child Module
+ ┃ ┣ 📂 azurerm_nic                 # 🔌 Network Interface (NIC) Child Module
+ ┃ ┣ 📂 azurerm_pip                 # 🌐 Public IP Address Child Module
+ ┃ ┣ 📂 azurerm_rg                  # 📁 Resource Group Child Module
+ ┃ ┣ 📂 azurerm_storage_account     # 📦 Storage Account Child Module
+ ┃ ┣ 📂 azurerm_subnet              # 🕸️ Subnet Child Module
+ ┃ ┣ 📂 azurerm_virtual_machine     # 💻 Linux Virtual Machine Child Module
+ ┃ ┗ 📂 azurerm_vnet                # 🌐 Virtual Network (VNet) Child Module
+ ┗ 📂 env
+   ┗ 📂 dev                         # 🛠️ Development Environment Root Module
+     ┣ 📜 .terraform.lock.hcl       # 🔒 Provider Dependency Lock File
+     ┣ 📜 cloud-init.yaml           # 📜 VM Provisioning Script (Custom Data)
+     ┣ 📜 main.tf                   # 🧩 Parent Module Orchestration
+     ┣ 📜 provider.tf               # ⚙️ AzureRM Provider & Remote State Backend
+     ┣ 📜 terraform.tfvars          # 📝 Dev Variable Input Values
+     ┗ 📜 variable.tf               # 📋 Variable Input Definitions
+```
+
+---
+
+## 🏗️ Managed Azure Resources Detailed Breakdown 🛠️
+
+Below is a detailed breakdown of all Azure infrastructure resources provisioned and managed by this repository:
 
 ```mermaid
 flowchart TB
-
-    Internet((Internet))
-    OnPrem[On-Premises / Corporate Network]
-
-    Internet --> FrontDoor[Azure Front Door / WAF]
-    OnPrem --> VPN[VPN / ExpressRoute]
-
-    subgraph Azure["Microsoft Azure"]
-
-        subgraph Governance["Governance & Management"]
-            MG[Management Groups]
-            Policy[Azure Policy]
-            RBAC[Azure RBAC]
-            Defender[Microsoft Defender for Cloud]
+    subgraph RG["📁 Resource Group (rajeev_axion)"]
+        direction TB
+        SA["📦 Storage Account<br/>(rajeevaxionsa1)"]
+        
+        subgraph Net["🌐 Networking Layer"]
+            VNET["Virtual Network<br/>10.198.0.0/20"]
+            SUBNET["Subnet<br/>10.198.1.0/25"]
+            PIP["Public IP<br/>(Static Allocation)"]
+            NIC["Network Interface<br/>(rajeev_axion_nic)"]
+            
+            VNET --> SUBNET
+            SUBNET --> NIC
+            PIP --> NIC
         end
-
-        subgraph Platform["Platform / Connectivity Landing Zone"]
-
-            Hub["Hub VNet"]
-
-            FW[Azure Firewall]
-            Bastion[Azure Bastion]
-            DNS[Private DNS]
-            LAW[Log Analytics / Azure Monitor]
-
-            Hub --> FW
-            Hub --> Bastion
-            Hub --> DNS
-            Hub --> LAW
+        
+        subgraph Sec["🔐 Security & Identity"]
+            KV["Key Vault<br/>(rajeev-axion-kv-01)"]
+            KVS1["Secret 1: vm-admin-username"]
+            KVS2["Secret 2: vm-admin-password"]
+            
+            KV --> KVS1
+            KV --> KVS2
         end
-
-        subgraph Spokes["Application Landing Zones"]
-
-            Dev["Dev Subscription / Spoke"]
-            Test["Test Subscription / Spoke"]
-            Prod["Prod Subscription / Spoke"]
-
-            Dev --> App1[Application Workloads]
-            Test --> App2[Application Workloads]
-            Prod --> App3[Production Workloads]
+        
+        subgraph Compute["💻 Compute Workload"]
+            VM["Linux VM: rajeevvm1<br/>Canonical Ubuntu Server 22.04 LTS<br/>Standard_D2s_v3"]
+            CLOUDINIT["Custom Data<br/>(cloud-init.yaml)"]
+            
+            CLOUDINIT --> VM
         end
-
-        MG --> Policy
-        MG --> RBAC
-        Policy --> Dev
-        Policy --> Test
-        Policy --> Prod
-
-        Hub --> Dev
-        Hub --> Test
-        Hub --> Prod
-
-        Defender --> Dev
-        Defender --> Test
-        Defender --> Prod
-
+        
+        NIC --> VM
+        KVS1 -. Secrets Read .-> VM
+        KVS2 -. Secrets Read .-> VM
     end
-
-    FrontDoor --> Dev
-    FrontDoor --> Test
-    FrontDoor --> Prod
-
-    VPN --> Hub
 ```
 
-### Architecture Highlights
+### 📋 Detailed Resource Specifications
 
-* **Management Groups** provide a hierarchical governance structure.
-* **Azure Policy** enforces organizational compliance and standards.
-* **Azure RBAC** implements least-privilege access.
-* **Hub VNet** provides centralized connectivity services.
-* **Azure Firewall** provides centralized network security.
-* **Azure Bastion** enables secure VM access without exposing public IPs.
-* **Private DNS** supports private connectivity and name resolution.
-* **Log Analytics and Azure Monitor** provide centralized monitoring.
-* **Spoke VNets** host application workloads.
-* **Azure Front Door / WAF** provides global application entry and web protection.
-
-> The architecture can be extended with Azure Virtual WAN, Private Endpoints, ExpressRoute, VPN Gateway, Sentinel, Defender for Cloud, and other enterprise platform services based on workload requirements.
+| Resource Type | Resource Name | Purpose & Configuration |
+| :--- | :--- | :--- |
+| 📁 **Azure Resource Group** | `rajeev_axion` | Central logical container holding all DEV environment deployment components in region `westus`. |
+| 📦 **Storage Account** | `rajeevaxionsa1` | General-purpose Azure Storage Account configured with `Standard_LRS` redundancy. |
+| 🌐 **Virtual Network** | `rajeev_axion_vnet` | Isolated network environment defined with CIDR block `10.198.0.0/20`. |
+| 🕸️ **Subnet** | `rajeev_axion_subnet` | Application subnet within VNet with address space `10.198.1.0/25`. |
+| 📡 **Public IP** | `rajeev_axion_pip` | Dedicated Public IP address with `Static` IP allocation for VM external access. |
+| 🔌 **Network Interface** | `rajeev_axion_nic` | NIC mapping the Subnet and Static Public IP to the Linux Virtual Machine. |
+| 🔑 **Azure Key Vault** | `rajeev-axion-kv-01` | Secure Key Vault with RBAC/Access Policy supporting `Get`, `List`, `Set`, `Delete`, and `Purge` permissions. |
+| 🔐 **Key Vault Secrets** | `vm-admin-username`<br/>`vm-admin-password` | Stores VM administrator login credentials securely inside Key Vault without hardcoding passwords in Terraform. |
+| 💻 **Linux Virtual Machine** | `rajeevvm1` | `Standard_D2s_v3` Ubuntu 22.04 LTS server. Reads credentials directly from Key Vault and runs custom setup scripts from `cloud-init.yaml`. |
 
 ---
 
-# 🧩 2. Terraform Parent–Child Module Architecture
+## 🧩 1. Reusable Child Modules 🧱
 
-This project uses a layered Terraform architecture.
+Each child module in `child_module/` is built dynamically using `for_each` meta-arguments to allow scalable multi-resource deployment:
 
-The **Child Modules** are responsible for creating individual Azure resources, while the **Parent Modules** orchestrate multiple child modules to build larger infrastructure components.
+| Module | Icon | Functionality & Key Features |
+| :--- | :---: | :--- |
+| **`azurerm_rg`** | 📁 | Dynamically provisions Azure Resource Groups (`var.axion`). |
+| **`azurerm_storage_account`** | 📦 | Provisions Azure Storage Accounts (`Standard_LRS`, Blob, etc.). |
+| **`azurerm_vnet`** | 🌐 | Deploys Virtual Networks with customizable CIDR spaces. |
+| **`azurerm_subnet`** | 🕸️ | Provisions Subnets mapped to target Virtual Networks. |
+| **`azurerm_pip`** | 📡 | Allocates Static / Dynamic Public IP addresses. |
+| **`azurerm_nic`** | 🔌 | Creates Network Interfaces, resolving Subnet & Public IP IDs dynamically via `data` blocks. |
+| **`azurerm_key_vault`** | 🔑 | Deploys Azure Key Vaults with tenant access policies (`Get`, `List`, `Set`, `Delete`). |
+| **`azurerm_key_vault_secret`** | 🔐 | Manages and injects sensitive admin credentials into Key Vaults. |
+| **`azurerm_virtual_machine`** | 💻 | Provisions Linux VMs with Key Vault dynamic secret resolution & `cloud-init.yaml` custom data. |
 
-```mermaid
-flowchart TB
+---
 
-    Dev["Environment: DEV"]
-    Test["Environment: TEST"]
-    Prod["Environment: PROD"]
+## ⚙️ 2. Environment Configuration (`env/dev`) 🛠️
 
-    Dev --> Parent
-    Test --> Parent
-    Prod --> Parent
+The `env/dev` directory represents the **Development Environment** orchestrator:
 
-    Parent["Parent Module<br/>Landing Zone Orchestrator"]
+### 🔒 Remote Azure Backend (`provider.tf`)
+State is securely persisted in Azure Blob Storage with optimistic state locking:
 
-    Parent --> RG["Child Module<br/>Resource Group"]
-    Parent --> VNet["Child Module<br/>Virtual Network"]
-    Parent --> Subnet["Child Module<br/>Subnet"]
-    Parent --> NSG["Child Module<br/>Network Security Group"]
-    Parent --> KV["Child Module<br/>Key Vault"]
-    Parent --> Storage["Child Module<br/>Storage Account"]
-    Parent --> Monitor["Child Module<br/>Monitoring"]
+```hcl
+terraform {
+  required_version = ">= 1.5.0"
 
-    RG --> Azure["Azure Resources"]
-    VNet --> Azure
-    Subnet --> Azure
-    NSG --> Azure
-    KV --> Azure
-    Storage --> Azure
-    Monitor --> Azure
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 4.0, < 6.0"
+    }
+  }
+
+  backend "azurerm" {
+    resource_group_name  = "rg-rajeev"
+    storage_account_name = "rajeevaxionsa2"
+    container_name       = "tfstate"
+    key                  = "dev.terraform.tfstate"
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
 ```
 
-### Module Responsibility
+### 🧩 Module Orchestration (`main.tf`)
+Modules are composed cleanly using natural dependency graph resolution:
 
-| Layer                         | Responsibility                                    |
-| ----------------------------- | ------------------------------------------------- |
-| **Environment / Root Module** | Provides environment-specific configuration       |
-| **Parent Module**             | Orchestrates multiple child modules               |
-| **Child Module**              | Creates a specific Azure resource                 |
-| **Variables**                 | Provides configurable inputs                      |
-| **Outputs**                   | Exposes resource information to dependent modules |
-| **Terraform State**           | Tracks infrastructure lifecycle                   |
+```hcl
+module "axion" {
+  source = "../../child_module/azurerm_rg"
+  axion  = var.axion
+}
 
-### Example Module Flow
+module "axion_storage_account" {
+  depends_on            = [module.axion]
+  source                = "../../child_module/azurerm_storage_account"
+  axion_storage_account = var.axion_storage_account
+}
 
-```text
-env/dev
-   │
-   ▼
-Parent Module
-   │
-   ├── Resource Group Module
-   │
-   ├── VNet Module
-   │
-   ├── Subnet Module
-   │
-   ├── NSG Module
-   │
-   ├── Key Vault Module
-   │
-   └── Storage Account Module
-   │
-   ▼
-Azure Landing Zone
-```
-
-This approach allows the same child modules to be reused across multiple environments.
-
-```text
-                 Reusable Child Modules
-                         │
-          ┌──────────────┼──────────────┐
-          │              │              │
-          ▼              ▼              ▼
-        DEV            TEST           PROD
-          │              │              │
-          ▼              ▼              ▼
-    Same Standards  Same Standards  Same Standards
+# Subnet, PIP, NIC, Key Vault, Secrets, and VM modules...
 ```
 
 ---
 
-# 🔄 3. CI/CD + DevSecOps Pipeline Flow
+## 🔄 3. CI/CD & DevSecOps Pipeline 🤖
 
-Infrastructure deployment is automated through a CI/CD pipeline.
-
-Security and compliance checks are integrated into the pipeline before infrastructure is deployed to Azure.
+Infrastructure deployment is fully automated through **GitHub Actions** with keyless **OpenID Connect (OIDC)** authentication (`azure/login@v2`).
 
 ```mermaid
 flowchart LR
-
-    Developer["Developer"]
-    Git["Git Repository"]
-    PR["Pull Request"]
-
-    Validate["Terraform Format<br/>Terraform Validate"]
-    Security["Security Scanning"]
-    Checkov["Checkov<br/>IaC Security"]
-    Gitleaks["Gitleaks<br/>Secret Detection"]
-
-    Plan["Terraform Plan"]
-    Approval["Manual Approval"]
-    Apply["Terraform Apply"]
-
-    Azure["Azure Landing Zone"]
-
-    Developer --> Git
-    Git --> PR
-    PR --> Validate
-
-    Validate --> Security
-
-    Security --> Checkov
-    Security --> Gitleaks
-
-    Checkov --> Plan
-    Gitleaks --> Plan
-
-    Plan --> Approval
-    Approval --> Apply
-    Apply --> Azure
+    Push["🚀 Push / PR to main"] --> Checkout["📥 Actions Checkout"]
+    Checkout --> OIDC["🔑 Azure Login (OIDC)"]
+    OIDC --> Verify["🔍 az account show"]
+    Verify --> SetupTF["⚙️ Setup Terraform"]
+    SetupTF --> Format["🎨 terraform fmt"]
+    Format --> Init["🔄 terraform init"]
+    Init --> Validate["✅ terraform validate"]
+    Validate --> Plan["📊 terraform plan"]
+    Plan --> Apply["🚀 terraform apply (on main)"]
 ```
 
-### Pipeline Stages
+### 🔒 Azure OIDC Security Controls
 
-```text
-1. Developer Commit
-        ↓
-2. Pull Request
-        ↓
-3. Terraform Format
-        ↓
-4. Terraform Validate
-        ↓
-5. Checkov Security Scan
-        ↓
-6. Gitleaks Secret Scan
-        ↓
-7. Terraform Plan
-        ↓
-8. Manual Approval
-        ↓
-9. Terraform Apply
-        ↓
-10. Azure Landing Zone
-```
+```yaml
+permissions:
+  id-token: write
+  contents: read
 
-### DevSecOps Controls
-
-The pipeline integrates security into the Infrastructure as Code lifecycle.
-
-**Checkov** is used to identify Terraform security and compliance misconfigurations.
-
-```bash
-checkov -d .
-```
-
-**Gitleaks** is used to detect accidentally committed secrets.
-
-```bash
-gitleaks detect --source .
-```
-
-> Secrets and credentials should never be hardcoded in Terraform source code. Sensitive configuration should be managed using secure mechanisms such as Azure Key Vault, Managed Identity, or federated workload identity.
-
----
-
-# 🗄️ 4. Terraform State Management
-
-For enterprise environments, Terraform state should be stored remotely.
-
-```mermaid
-flowchart LR
-
-    Terraform["Terraform"]
-    Backend["Azure Storage Account"]
-    Container["Blob Container"]
-    State["Terraform State"]
-
-    Terraform --> Backend
-    Backend --> Container
-    Container --> State
-```
-
-The remote backend provides:
-
-* Centralized state management
-* Team collaboration
-* State locking
-* Controlled access
-* Environment isolation
-* Reduced risk of state corruption
-
-Example environment separation:
-
-```text
-Azure Storage Account
-│
-├── dev.tfstate
-├── test.tfstate
-└── prod.tfstate
+env:
+  ARM_USE_OIDC: true
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 ```
 
 ---
 
-# 🎯 5. Enterprise Deployment Model
+## 💻 Local Execution Guide 🛠️
 
-The complete solution follows this enterprise deployment pattern:
+### 📋 Prerequisites
+* 🛠️ **[Terraform CLI](https://developer.hashicorp.com/terraform/downloads)** (v1.5.0+)
+* ☁️ **[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)** (`az login`)
 
-```mermaid
-flowchart TB
+### ⚡ Quickstart Commands
+```bash
+# 1️⃣ Navigate to DEV environment
+cd env/dev
 
-    Platform["Cloud Platform Team"]
+# 2️⃣ Initialize Terraform & Azure Backend
+terraform init
 
-    Modules["Reusable Terraform Modules"]
-    Governance["Governance & Security Standards"]
-    Pipeline["Centralized CI/CD Pipeline"]
+# 3️⃣ Validate configuration syntax
+terraform validate
 
-    Platform --> Modules
-    Platform --> Governance
-    Platform --> Pipeline
+# 4️⃣ Generate execution plan
+terraform plan -var-file="terraform.tfvars"
 
-    Modules --> Dev["Development"]
-    Modules --> Test["Test"]
-    Modules --> Stage["Staging"]
-    Modules --> Prod["Production"]
-
-    Governance --> Dev
-    Governance --> Test
-    Governance --> Stage
-    Governance --> Prod
-
-    Pipeline --> Dev
-    Pipeline --> Test
-    Pipeline --> Stage
-    Pipeline --> Prod
+# 5️⃣ Deploy infrastructure
+terraform apply -var-file="terraform.tfvars" -auto-approve
 ```
 
-This model enables organizations to establish a **standardized cloud platform** where application teams can consume pre-approved infrastructure patterns while the Cloud Platform team maintains centralized governance and security.
+---
 
+## 👨‍💻 Author 🌟
 
+<div align="center">
 
-# 🏆 Key Benefits
+### **Rajeev Ranjan**  
+*Azure Cloud Architect | DevOps Engineer | DevSecOps & Terraform Specialist*
 
-### ♻️ Reusability
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rajeevsingh143)
 
-Child modules can be reused across multiple environments and projects.
+</div>
 
-### 📈 Scalability
+---
 
-New resources and platform capabilities can be added without redesigning the entire Terraform codebase.
-
-### 🛡️ Governance
-
-Centralized modules and policies help enforce organizational standards.
-
-### 🔐 Security
-
-Security controls are integrated into both infrastructure architecture and CI/CD pipelines.
-
-### 🔄 Consistency
-
-The same infrastructure patterns can be deployed consistently across Development, Test, Staging, and Production.
-
-### 🤖 Automation
-
-Infrastructure provisioning is automated through Terraform and CI/CD pipelines.
-
-### 📦 Standardization
-
-Reusable modules help eliminate manual configuration and reduce deployment inconsistencies.
-
-
-
-# 🚀 Key Architecture Principles
-
-* Infrastructure as Code
-* Modular Terraform Architecture
-* Parent–Child Module Design
-* Reusability
-* Scalability
-* Security by Design
-* Policy as Code
-* Least Privilege
-* Automated CI/CD
-* DevSecOps
-* Remote State Management
-* Environment Isolation
-* Centralized Governance
-
-
-# 🔮 Future Enhancements
-
-The Landing Zone architecture can be further enhanced with:
-
-* Azure Management Groups
-* Azure Policy at Management Group Scope
-* Subscription Vending
-* RBAC Automation
-* Hub-Spoke Networking
-* Azure Virtual WAN
-* Private Endpoints
-* Private DNS Zones
-* Azure Firewall
-* Azure Bastion
-* Microsoft Defender for Cloud
-* Microsoft Sentinel
-* Centralized Logging
-* Azure Monitor
-* Automated Subscription Provisioning
-* OIDC / Workload Identity Federation
-* Drift Detection
-
-
-
-# 📚 Learning Objectives
-
-This project demonstrates practical implementation of:
-
-* Azure Landing Zone Architecture
-* Terraform Infrastructure as Code
-* Parent–Child Module Architecture
-* Reusable Terraform Modules
-* Azure Networking
-* Azure Security and Governance
-* Terraform Remote State
-* CI/CD Automation
-* DevSecOps
-* Infrastructure Security Scanning
-* Enterprise Cloud Architecture
-
-
-
-# 👨‍💻 Author
-
-**Rajeev Ranjan**
-
-Azure Cloud | DevOps | DevSecOps | Terraform | Cloud Architecture
-
-
-## ⭐ Conclusion
-
-This project demonstrates how Terraform can be used to build a **modular, reusable, scalable, secure, and governed Azure Landing Zone**.
-
-By separating infrastructure into **Parent and Child Terraform Modules**, the solution enables organizations to standardize cloud infrastructure while allowing teams to provision resources consistently through automation.
-
-The architecture follows an **enterprise cloud platform approach**, where **security, governance, scalability, reusability, and automation** are treated as first-class principles.
-
-> **Build once. Reuse everywhere. Deploy consistently. Govern centrally.**
+<div align="center">
+⭐ <i>If you found this project helpful, please consider giving it a star!</i> ⭐
+</div>

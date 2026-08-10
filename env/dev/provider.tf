@@ -9,8 +9,8 @@ terraform {
   }
 
   backend "azurerm" {
-    resource_group_name  = "rajeev_axion"
-    storage_account_name = "rajeevaxionsa1"
+    resource_group_name  = "rg-rajeev"
+    storage_account_name = "rajeevaxionsa2"
     container_name       = "tfstate"
     key                  = "dev.terraform.tfstate"
   }

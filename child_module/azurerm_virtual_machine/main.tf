@@ -1,15 +1,15 @@
 variable "linuxvm" {}
 
 resource "azurerm_linux_virtual_machine" "linuxvm" {
-  for_each           = var.linuxvm
-  name                = each.value.vm_name
-  resource_group_name = each.value.vm_resource_group_name
-  location            = each.value.vm_location
-  size                = each.value.vm_size
+  for_each                        = var.linuxvm
+  name                            = each.value.vm_name
+  resource_group_name             = each.value.vm_resource_group_name
+  location                        = each.value.vm_location
+  size                            = each.value.vm_size
   admin_username                  = data.azurerm_key_vault_secret.admin_username[each.key].value
   admin_password                  = data.azurerm_key_vault_secret.admin_password[each.key].value
   disable_password_authentication = false
-  network_interface_ids = [data.azurerm_network_interface.nic[each.key].id]
+  network_interface_ids           = [data.azurerm_network_interface.nic[each.key].id]
 
   os_disk {
     caching              = "ReadWrite"
@@ -22,6 +22,6 @@ resource "azurerm_linux_virtual_machine" "linuxvm" {
     sku       = each.value.image_sku
     version   = each.value.image_version
   }
-   custom_data = base64encode(file("cloud-init.yaml"))
-   
+  custom_data = base64encode(file("${path.root}/cloud-init.yaml"))
+
 }

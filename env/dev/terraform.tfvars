@@ -70,7 +70,7 @@ key_vault_secrets = {
   }
   secret2 = {
     name              = "vm-admin-password"
-    value             = "Rajeev@1234"
+    value             = "ChangeMeInCISecrets!123" # Pass securely or via TF_VAR_key_vault_secrets / CI secrets
     key_vault_name    = "rajeev-axion-kv-01"
     key_vault_rg_name = "rajeev_axion"
   }

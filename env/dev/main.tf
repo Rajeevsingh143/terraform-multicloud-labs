@@ -10,25 +10,25 @@ module "axion_storage_account" {
 }
 
 module "axion_vnets" {
-  depends_on  = [module.axion, module.axion_storage_account]
+  depends_on  = [module.axion]
   source      = "../../child_module/azurerm_vnet"
   axion_vnets = var.axion_vnets
 }
 
 module "subnet_axion" {
-  depends_on   = [module.axion, module.axion_storage_account, module.axion_vnets]
+  depends_on   = [module.axion_vnets]
   source       = "../../child_module/azurerm_subnet"
   subnet-axion = var.subnet-axion
 }
 
 module "axion_publicip" {
-  depends_on = [module.axion, module.axion_storage_account, module.axion_vnets]
+  depends_on = [module.axion]
   source     = "../../child_module/azurerm_pip"
   axion_pip  = var.axion_pip
 }
 
 module "axion_nic" {
-  depends_on = [module.axion, module.axion_storage_account, module.axion_vnets, module.subnet_axion, module.axion_publicip]
+  depends_on = [module.subnet_axion, module.axion_publicip]
   source     = "../../child_module/azurerm_nic"
   nic-sets   = var.nic-set
 }
@@ -47,13 +47,7 @@ module "axion_key_vault_secret" {
 
 module "linux_vm" {
   depends_on = [
-    module.axion,
-    module.axion_storage_account,
-    module.axion_vnets,
-    module.subnet_axion,
-    module.axion_publicip,
     module.axion_nic,
-    module.axion_key_vault,
     module.axion_key_vault_secret
   ]
   source  = "../../child_module/azurerm_virtual_machine"

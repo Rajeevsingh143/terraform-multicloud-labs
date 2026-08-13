@@ -93,7 +93,6 @@ jobs:
       # Azure Login using OIDC
       # ========================================
       - name: Azure Login
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -104,7 +103,6 @@ jobs:
       # Verify Azure Login
       # ========================================
       - name: Verify Azure Login
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: |
           az account show
 
@@ -112,7 +110,6 @@ jobs:
       # Terraform Init
       # ========================================
       - name: Terraform Init
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: |
           terraform init -input=false
 
@@ -120,7 +117,6 @@ jobs:
       # Terraform Validate
       # ========================================
       - name: Terraform Validate
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: |
           terraform validate
 
@@ -128,7 +124,6 @@ jobs:
       # Terraform Plan
       # ========================================
       - name: Terraform Plan
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: |
           terraform plan \
             -input=false \

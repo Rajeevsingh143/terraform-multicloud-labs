@@ -1,4 +1,7 @@
-variable "axion_pip" {}
+variable "axion_pip" {
+  type        = any
+  description = "Map of Public IP configurations"
+}
 resource "azurerm_public_ip" "axion_pip" {
   for_each            = var.axion_pip
   name                = each.value.name

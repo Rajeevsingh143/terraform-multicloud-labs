@@ -1,4 +1,7 @@
-variable "subnet-axion" {}
+variable "subnet-axion" {
+  type        = any
+  description = "Map of Subnet configurations"
+}
 
 resource "azurerm_subnet" "axion_subnet" {
   for_each             = var.subnet-axion

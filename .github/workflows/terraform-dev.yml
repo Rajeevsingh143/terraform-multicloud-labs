@@ -1,9 +1,11 @@
-name: Terraform Azure OIDC
+name: Terraform Azure OIDC - DevSecOps
 
 on:
   push:
     branches:
       - main
+      - 'feature/**'
+
   pull_request:
     branches:
       - main
@@ -21,21 +23,75 @@ env:
   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
 jobs:
+
   terraform:
-    name: Terraform Deploy - DEV
+    name: Terraform Security & Deployment
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./env/dev
 
     steps:
 
-      # ----------------------------------------
+      # ========================================
       # Checkout
-      # ----------------------------------------
+      # ========================================
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # ----------------------------------------
+      # ========================================
+      # Gitleaks - Secret Scanning
+      # ========================================
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ========================================
+      # Install Terraform
+      # ========================================
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # ========================================
+      # TFLint
+      # ========================================
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Initialize TFLint
+        run: |
+          tflint --init
+        working-directory: .
+
+      - name: Run TFLint
+        run: |
+          tflint --recursive
+        working-directory: .
+
+      # ========================================
+      # tfsec - Terraform Security Scan
+      # ========================================
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ./env/dev
+          soft_fail: false
+
+      # ========================================
+      # Terraform Format
+      # ========================================
+      - name: Terraform Format Check
+        run: |
+          terraform fmt -check -recursive
+        working-directory: .
+
+      # ========================================
       # Azure Login using OIDC
-      # ----------------------------------------
+      # ========================================
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -43,59 +99,42 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # ----------------------------------------
+      # ========================================
       # Verify Azure Login
-      # ----------------------------------------
+      # ========================================
       - name: Verify Azure Login
         run: |
           az account show
 
-      # ----------------------------------------
-      # Install Terraform
-      # ----------------------------------------
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      # ----------------------------------------
-      # Terraform Format
-      # ----------------------------------------
-      - name: Terraform Format
-        working-directory: ./env/dev
-        run: |
-          terraform fmt -check -recursive
-
-      # ----------------------------------------
+      # ========================================
       # Terraform Init
-      # ----------------------------------------
+      # ========================================
       - name: Terraform Init
-        working-directory: ./env/dev
         run: |
           terraform init -input=false
 
-      # ----------------------------------------
+      # ========================================
       # Terraform Validate
-      # ----------------------------------------
+      # ========================================
       - name: Terraform Validate
-        working-directory: ./env/dev
         run: |
           terraform validate
 
-      # ----------------------------------------
+      # ========================================
       # Terraform Plan
-      # ----------------------------------------
+      # ========================================
       - name: Terraform Plan
-        working-directory: ./env/dev
         run: |
           terraform plan \
             -input=false \
             -var-file="terraform.tfvars"
 
-      # ----------------------------------------
+      # ========================================
       # Terraform Apply
-      # ----------------------------------------
+      # Only runs after merge/push to main
+      # ========================================
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
-        working-directory: ./env/dev
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           terraform apply \
             -input=false \

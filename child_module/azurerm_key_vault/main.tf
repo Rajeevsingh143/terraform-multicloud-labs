@@ -1,4 +1,7 @@
-variable "key_vaults" {}
+variable "key_vaults" {
+  type        = any
+  description = "Map of Key Vault configurations"
+}
 
 data "azurerm_client_config" "current" {}
 

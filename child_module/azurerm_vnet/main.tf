@@ -1,4 +1,7 @@
-variable "axion_vnets" {}
+variable "axion_vnets" {
+  type        = any
+  description = "Map of Virtual Network configurations"
+}
 
 resource "azurerm_virtual_network" "axion_vnet" {
   for_each            = var.axion_vnets

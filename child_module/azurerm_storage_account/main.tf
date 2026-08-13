@@ -1,4 +1,7 @@
-variable "axion_storage_account" {}
+variable "axion_storage_account" {
+  type        = any
+  description = "Map of Storage Account configurations"
+}
 
 resource "azurerm_storage_account" "axion_sa" {
   for_each                 = var.axion_storage_account

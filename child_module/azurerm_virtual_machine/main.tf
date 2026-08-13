@@ -1,4 +1,7 @@
-variable "linuxvm" {}
+variable "linuxvm" {
+  type        = any
+  description = "Map of Linux Virtual Machine configurations"
+}
 
 resource "azurerm_linux_virtual_machine" "linuxvm" {
   for_each                        = var.linuxvm

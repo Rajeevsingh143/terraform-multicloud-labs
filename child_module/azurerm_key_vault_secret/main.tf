@@ -1,4 +1,7 @@
-variable "key_vault_secrets" {}
+variable "key_vault_secrets" {
+  type        = any
+  description = "Map of Key Vault Secret configurations"
+}
 
 data "azurerm_key_vault" "kv" {
   for_each            = var.key_vault_secrets

@@ -3,6 +3,10 @@ axion = {
     name     = "rajeev_axion"
     location = "westus"
   }
+  rg2 = {
+    name     = "azaadi_axion"
+    location = "westus"
+  }
 }
 
 axion_storage_account = {

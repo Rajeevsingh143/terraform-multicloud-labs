@@ -3,6 +3,10 @@ axion = {
     name     = "rajeev_axion"
     location = "westus"
   }
+  rg2 = {
+    name     = "azaadi_axion"
+    location = "westus"
+  }
 }
 
 axion_storage_account = {
@@ -63,13 +67,13 @@ key_vaults = {
 
 key_vault_secrets = {
   secret1 = {
-    name              = "vm-admin-username"
+    name              = "vm-admin-username-v1"
     value             = "devopsindsider"
     key_vault_name    = "rajeev-axion-kv-01"
     key_vault_rg_name = "rajeev_axion"
   }
   secret2 = {
-    name              = "vm-admin-password"
+    name              = "vm-admin-password-v1"
     value             = "ChangeMeInCISecrets!123" # Pass securely or via TF_VAR_key_vault_secrets / CI secrets
     key_vault_name    = "rajeev-axion-kv-01"
     key_vault_rg_name = "rajeev_axion"
@@ -90,7 +94,7 @@ linuxvm = {
     nic_resource_group_name = "rajeev_axion"
     kv_name                 = "rajeev-axion-kv-01"
     kv_resource_group_name  = "rajeev_axion"
-    secret_username_name    = "vm-admin-username"
-    secret_password_name    = "vm-admin-password"
+    secret_username_name    = "vm-admin-username-v1"
+    secret_password_name    = "vm-admin-password-v1"
   }
 }

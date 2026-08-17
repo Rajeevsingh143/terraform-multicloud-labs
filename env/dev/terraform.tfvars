@@ -11,7 +11,7 @@ axion = {
 
 axion_storage_account = {
   sa1 = {
-    name                     = "rajeevaxionsa1"
+    name                     = "rajeevaxionsa567"
     resource_group_name      = "rajeev_axion"
     location                 = "westus"
     account_tier             = "Standard"
@@ -21,7 +21,7 @@ axion_storage_account = {
 
 axion_vnets = {
   vnet1 = {
-    name                = "rajeev_axion_vnet"
+    name                = "vnet_axion"
     address_space       = ["10.198.0.0/20"]
     location            = "westus"
     resource_group_name = "rajeev_axion"
@@ -32,7 +32,7 @@ subnet-axion = {
   subnet1 = {
     name                 = "rajeev_axion_subnet"
     resource_group_name  = "rajeev_axion"
-    virtual_network_name = "rajeev_axion_vnet"
+    virtual_network_name = "vnet_axion"
     address_prefixes     = ["10.198.1.0/25"]
   }
 }
@@ -51,7 +51,7 @@ nic-set = {
     nic_name                 = "rajeev_axion_nic"
     nic_location             = "westus"
     nic_resource_group_name  = "rajeev_axion"
-    nic_vnet_name            = "rajeev_axion_vnet"
+    nic_vnet_name            = "vnet_axion"
     nic_subnet_name          = "rajeev_axion_subnet"
     nic_public_ip_address_id = "rajeev_axion_pip"
   }

@@ -11,6 +11,10 @@ axion = {
     name     = "devops-rg"
     location = "westus"
   }
+  rg3 = {
+    name     = "ponda-rg"
+    location = "westus"
+  }
 }
 
 axion_storage_account = {

@@ -7,6 +7,10 @@ axion = {
     name     = "azaadi_axion"
     location = "westus"
   }
+    rg3 = {
+    name     = "devops-rg"
+    location = "westus"
+  }
 }
 
 axion_storage_account = {

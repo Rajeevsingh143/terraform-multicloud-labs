@@ -11,7 +11,7 @@ terraform {
   backend "azurerm" {
     resource_group_name  = "rg-rajeev"
     storage_account_name = "rajeevaxionsa143"
-    container_name       = "tfstate"
+    container_name       = "tfsec"
     key                  = "dev.terraform.tfstate"
   }
 }
